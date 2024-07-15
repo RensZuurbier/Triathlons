@@ -39,7 +39,6 @@ dataframes =[df_hhw, df_langedijk, df_dirkshorn, df_niedorp, df_schagen]
 dataframes = add_name(dataframes)
 
 # 2) Filter op Mannen categorie (M)
-#dataframes =[df_hhw, df_langedijk, df_dirkshorn, df_niedorp, df_schagen]
 dataframes = filter_df(dataframes, "MV", "M")
 
 # 3) Drop onnodige kolommen en ranking kolommen om de ranking later weer aan te maken
@@ -61,74 +60,84 @@ dataframes = add_ranking(dataframes)
 
 m_hhw, m_langedijk, m_dirkshorn, m_niedorp, m_schagen = dataframes
 
-
-
-#triathlons =[["1: Stad van de Zon", m_hhw], ["2: Langedijk", m_ld], ["3: Dirkshorn", m_dh], ["4: Nieuwe Niedorp", m_nn]]
-
-# print("\n" +"Resultaten Langedijk")
-# print(m_ld.head())
-#
-# print("\n" + "Resultaten Dirkshorn")
-# print(m_dh.head())
-#
-# print("\n" + "Resultaten Niedorp")
-# print(m_nn.head())
-#
+###### Check hoe de dataframes er stuk voor stuk uit zien. Moet dezelfde opzet zijn ######
 # print("\n" + "Resultaten HHW")
 # print(m_hhw.head())
+#
+# print("\n" +"Resultaten Langedijk")
+# print(m_langedijk.head())
+#
+# print("\n" + "Resultaten Dirkshorn")
+# print(m_dirkshorn.head())
+#
+# print("\n" + "Resultaten Niedorp")
+# print(m_niedorp.head())
+#
+# print("\n" + "Resultaten Schagen")
+# print(m_schagen.head())
+###### Check hoe de dataframes er stuk voor stuk uit zien. Moet dezelfde opzet zijn ######
 
-#print(m_ld.loc[m_ld['Naam'].isin(dirkshorners)])
 
-
-triathlons =[m_hhw, m_langedijk, m_dirkshorn, m_niedorp, m_schagen]
-
-
+########################### BAR PLOTS ###########################
 # plot_stacked_bar(m_hhw, "Stad v d Zon", dirkshorners)
 # plot_stacked_bar(m_ld, "Langedijk", dirkshorners)
 # plot_stacked_bar(m_dh, "Dirkshorn", dirkshorners)
 # plot_stacked_bar(m_nn, "Nieuwe Niedorp")
-plot_stacked_bar(m_schagen, "Schagen", dirkshorners)
+# plot_stacked_bar(m_schagen, "Schagen", dirkshorners)
+########################### BAR PLOTS ###########################
 
 
-# Maakt DFs van enkel Rens & Mitchell
-rens = filter_df(triathlons, 'Naam', 'Rens Zuurbier')
-mitta = filter_df(triathlons, "Naam", 'Mitchell Tijsen')
 
-# Controleer welke Triathlons beide atleten hebben gedaan
-gemeenschappelijk = pd.merge(rens['Triathlon'], mitta['Triathlon'], on='Triathlon')
 
-# Voeg data van Rens & Mitchell samen in 1 DF
-combined_df = pd.concat([
-rens[rens['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True),
-mitta[mitta['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True)
-], ignore_index=True)
+atleet1 = input("Selecteer atleet 1: ")
+df_atleet1, atleet1 = search_and_select(dataframes, atleet1)
+
+# print(f'Dit zijn de resultaten van {atleet1}:')
+# print(df_atleet1)
+
+atleet2 = input("\n" "selecteer atleet 2: ")
+df_atleet2, atleet2 = search_and_select(dataframes, atleet2)
+#print(atleet2)
+
+combined_df = combined_df(df_atleet1, df_atleet2)
+
+# # Controleer welke Triathlons beide atleten hebben gedaan
+# gemeenschappelijk = pd.merge(df_atleet1['Triathlon'], df_atleet2['Triathlon'], on='Triathlon')
 #
+# # print("Gemeenschappelijke Triathlons:")
+# # print(gemeenschappelijk)
 #
-visualize_differences(combined_df, "Rens Zuurbier", "Mitchell Tijsen")
-#
+# # Voeg de datarames van atleet1 & atleet2 samen in 1 DF
+# combined_df = pd.concat([
+# df_atleet1[df_atleet1['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True),
+# df_atleet2[df_atleet2['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True)
+# ], ignore_index=True)
+
+
+
+visualize_differences(combined_df, atleet1, atleet2)
+
+exit()
+
+########################### lINE PLOTS ###########################
 #plot_line(m_hhw, dirkshorners)
 #plot_line(m_ld, dirkshorners)
 #plot_line(m_dh, dirkshorners)
 #plot_line(m_nn, dirkshorners)
-plot_line(m_sch, dirkshorners)
-# #
+#plot_line(m_sch, dirkshorners)
+########################### lINE PLOTS ###########################
+
+
+########################### BAR PLOTS ###########################
 # plot_bar(m_nn, "Zwem", "Zwem Niedorp", 27, dirkshorners)
 # plot_bar(m_nn, "Wis2", "Wis2 Niedorp", 27, dirkshorners)
 # plot_bar(m_nn, "Fiets", "Fiets Niedorp", 27, dirkshorners)
 # plot_bar(m_nn, "Wis1", "Wis1 Niedorp", 27, dirkshorners)
 # plot_bar(m_nn, "Loop", "Loop Niedorp", 27, dirkshorners)
-plot_bar(m_sch, "Loop", "Schagen", 27, dirkshorners)
+#plot_bar(m_sch, "Loop", "Schagen", 27, dirkshorners)
+########################### BAR PLOTS ###########################
 
 
-#     # Controleer welke Triathlons beide atleten gedaan hebben om te kunnen vergelijken
-#     gemeenschappelijk = pd.merge(df_atleet1['Triathlon'], df_atleet2['Triathlon'], on='Triathlon')
-#     print(gemeenschappelijk)
-#
-#     # Voeg de dataframes van de atleten samen
-#     combined_df = pd.concat([
-#     df_atleet1[df_atleet1['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True),
-#     df_atleet2[df_atleet2['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True)
-# ], ignore_index=True)
 
 
 #triathlon_keuze(triathlons)

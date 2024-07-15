@@ -52,21 +52,25 @@ def filter_df(dfs, column, filter_value):
     - filter_value (str): The value to filter the rows by in the specified column.
     """
     # Check of het een losse DF is
+    single_df = False
     if isinstance(dfs, pd.DataFrame):
         dfs = [dfs]
+        single_df = True
 
-    filtered_dfs = []
     # Voor een lijst met DFs
-    #new_df = pd.DataFrame()
+    filtered_dfs = []
 
-    for index, df in enumerate(dfs):
+    for df in dfs:
         if column in df.columns:
             df[column] = df[column].str.strip()
             filtered_df = df[df[column] == filter_value]
             filtered_dfs.append(filtered_df)
         else:
             filtered_dfs.append(df)
-            #new_df = pd.concat([new_df, filtered_df], ignore_index=True)
+
+    if single_df:
+        print("ER KOMT EEN LIJST UIT")
+        return filtered_dfs[0]
     return filtered_dfs
 
 ### Verwijdert opgegven kolommen ###
@@ -230,6 +234,74 @@ def add_nafiets(dfs):
         new_dfs.append(df)
 
     return new_dfs
+
+
+################################################################################
+############## ZOEKT DE ATLEET OP IN DE DF EN MAAKT EEN LOSSE DF  ##############
+def search_df(dfs, search_value):
+    results = []
+
+    for df in dfs:
+        if 'Naam' in df.columns:
+            hits = df[df['Naam'].str.contains(search_value, case=False, na=False)]
+            results.append(hits)
+    combined_results = pd.concat(results).drop_duplicates().reset_index(drop=True)
+
+    if combined_results.empty:
+        print(f"Geen deelnemmer gevonden met \'{search_value}\'.")
+        exit()
+    return combined_results
+
+def get_user_choice(results):
+    if results.empty:
+        print(f"Geen resultaten gevonden voor de opgegeven zoekterm.")
+        return None
+
+    unieke_resultaten = results.drop_duplicates(subset=['Naam']).reset_index(drop=True)
+    print("\n" + "Resultaten gevonden:" + "\n")
+    for i, row in unieke_resultaten.iterrows():
+        print(f"{i+1} {row['Naam']}")
+
+    while True:
+        try:
+            selectie = int(input(f"Maak een keuze (1-{len(unieke_resultaten)}): "))
+            if 1 <= selectie <= len(unieke_resultaten):
+                naam = unieke_resultaten["Naam"][selectie - 1]
+                print(f"{naam} is geselecteerd")
+                print('\n')
+
+                return unieke_resultaten.iloc[selectie - 1], naam
+            else:
+                print("Ongeldig indexnummer. Probeer het opnieuw.")
+        except ValueError:
+            print("Voer een geldig getal in.")
+
+def search_and_select(dfs, search_value):
+    results = search_df(dfs, search_value)
+
+    if not results.empty:
+        selected_name, naam = get_user_choice(results)
+        if selected_name is not None:
+            filtered_df = pd.concat([df[df['Naam'] == selected_name['Naam']] for df in dfs if 'Naam' in df.columns]).drop_duplicates().reset_index(drop=True)
+            return filtered_df, naam
+    return None
+############## ZOEKT DE ATLEET OP IN DE DF EN MAAKT EEN LOSSE DF  ##############
+#################################################################################
+
+def combined_df(df_atleet1, df_atleet2):
+    """
+    Checks which triathlons both atletes have in comen, and combine the results
+    of both given atletes into 1 DF for measuring
+    """
+    # Controleer de gemeenschappelijke triathlons
+    gemeenschappelijk = pd.merge(df_atleet1['Triathlon'], df_atleet2['Triathlon'], on='Triathlon')
+
+    combined_df = pd.concat([
+    df_atleet1[df_atleet1['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True),
+    df_atleet2[df_atleet2['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True)
+    ], ignore_index=True)
+
+    return combined_df
 
 ### maakt een Bar plot voor de opgegeven kolom van het DF. Geef weer hoe ###
 ### atleten met verschillende onderdelen hebben gepresteerd tov elkaar   ###
@@ -460,10 +532,6 @@ def plot_stacked_bar(df, title, dirkshorners=None):
 
 
 
-
-
-
-
 def convert_to_seconds(time_str):
     """Converteer een tijdsstring naar seconden."""
     t = pd.to_timedelta(time_str)
@@ -529,7 +597,7 @@ def visualize_differences(df, atleet1, atleet2):
     # plt.tight_layout()
     # plt.show()
 
-    # Radar- of spindiagram per triathlon
+    ### Radar- of spindiagram per triathlon vergelijking tussen 2 atleten ###
     for triathlon in gemeenschappelijk['Triathlon']:
         df1 = df_atleet1[df_atleet1['Triathlon'] == triathlon]
         df2 = df_atleet2[df_atleet2['Triathlon'] == triathlon]
@@ -551,7 +619,7 @@ def visualize_differences(df, atleet1, atleet2):
         ax.set_yticklabels([])
         ax.set_xticks(angles[:-1])
         ax.set_xticklabels(labels)
-        ax.set_title(f'Rentah vs Mitta - {triathlon}')
+        ax.set_title(f'{atleet1} vs {atleet2} - {triathlon}')
         ax.legend()
 
         # Sla de plots op
