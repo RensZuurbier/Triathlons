@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta, time
 from modules import *
 
-
 # Get dataframes of the triathlons
 df_hhw = pd.read_csv('triathlons_data/hhw.csv')
 df_langedijk = pd.read_csv('triathlons_data/langedijk.csv')
@@ -12,17 +11,12 @@ df_dirkshorn = pd.read_csv('triathlons_data/dirkshorn.csv')
 df_niedorp = pd.read_csv('triathlons_data/niedorp.csv')
 df_schagen = pd.read_csv('triathlons_data/schagen.csv')
 
-
-#### DH TRIATHLONNERS ####
-dirkshorners = ['Rens Zuurbier', 'Mitchell Tijsen', 'Thierry Spaans', 'Martin Bloothoofd',
-                'Co van Bueren']
-
-########## CODE ##########
+########## PROGRAM ##########
 ##### ZORG DAT ALLE DATAFRAMES HETZELFDE ZIJN #####
-# Omdat er voor de triathlon HHW (Stad v d Zon) de data al gefilterd
-# is op mannen (M) moet dit voor iedere dataframe gebeuren
+# Omdat er voor de triathlon HHW (Stad v d Zon) de data al gefilterd is op mannen (M)
+# wordt dit toegepast op ieder dataframe
 
-# HERNOEMEN KOLOMMEN HHW
+# HHW heeft ook als enige een andere naamgeving. Deze wordt hier herstelt naar de massa
 df_hhw = df_hhw.rename(columns={
     'Plaats': '#Tot',
     'bib': 'StNr',
@@ -47,18 +41,15 @@ dataframes = drop_column(dataframes)
 # 4) Hernoemt "#MV" kolommen naar "#Tot" of maakt nieuwe "#Tot" kolom aan
 dataframes = create_tot(dataframes)
 
-df_hhw, df_langedijk, df_dirkshorn, df_niedorp, df_schagen = dataframes
-
 # 5) Convert alle kolommen met tijd om naar type TimeDelta
 dataframes = convert_to_time(dataframes)
 
-# Maak opnieuw de "NaFiets" kolom aan door de tijden op te tellen
+# 6) Maak opnieuw de "NaFiets" kolom aan door de tijden op te tellen
 dataframes = add_nafiets(dataframes)
 
-# Maakt de ranking  kolommen voor ieder DF opnieuw aan
+# 7) Maakt de ranking  kolommen voor ieder DF opnieuw aan
 dataframes = add_ranking(dataframes)
 
-m_hhw, m_langedijk, m_dirkshorn, m_niedorp, m_schagen = dataframes
 
 ###### Check hoe de dataframes er stuk voor stuk uit zien. Moet dezelfde opzet zijn ######
 # print("\n" + "Resultaten HHW")
@@ -78,7 +69,26 @@ m_hhw, m_langedijk, m_dirkshorn, m_niedorp, m_schagen = dataframes
 ###### Check hoe de dataframes er stuk voor stuk uit zien. Moet dezelfde opzet zijn ######
 
 
-########################### BAR PLOTS ###########################
+## Laat de gebruiker atleet 1 en atleet 2 uit de beschikbare data selecteren voor vergelijking ##
+atleet1 = input("Selecteer atleet 1: ")
+df_atleet1, atleet1 = search_and_select(dataframes, atleet1)
+
+atleet2 = input("\n" "selecteer atleet 2: ")
+df_atleet2, atleet2 = search_and_select(dataframes, atleet2)
+
+# Maakt een nieuwe DF van de resultaten van beide atleten op de gemeenschappelijke DFs
+combined_df = combined_df(df_atleet1, df_atleet2)
+
+######### PLOT RADAR DIAGRAM TUSSEN 2 ATLETEN ############
+visualize_differences(combined_df, atleet1, atleet2)
+
+exit()
+
+#### DH TRIATHLONNERS ####
+dirkshorners = ['Rens Zuurbier', 'Mitchell Tijsen', 'Thierry Spaans', 'Martin Bloothoofd',
+                'Co van Bueren']
+
+########################### STACKED PLOTS ###########################
 # plot_stacked_bar(m_hhw, "Stad v d Zon", dirkshorners)
 # plot_stacked_bar(m_ld, "Langedijk", dirkshorners)
 # plot_stacked_bar(m_dh, "Dirkshorn", dirkshorners)
@@ -86,38 +96,6 @@ m_hhw, m_langedijk, m_dirkshorn, m_niedorp, m_schagen = dataframes
 # plot_stacked_bar(m_schagen, "Schagen", dirkshorners)
 ########################### BAR PLOTS ###########################
 
-
-
-
-atleet1 = input("Selecteer atleet 1: ")
-df_atleet1, atleet1 = search_and_select(dataframes, atleet1)
-
-# print(f'Dit zijn de resultaten van {atleet1}:')
-# print(df_atleet1)
-
-atleet2 = input("\n" "selecteer atleet 2: ")
-df_atleet2, atleet2 = search_and_select(dataframes, atleet2)
-#print(atleet2)
-
-combined_df = combined_df(df_atleet1, df_atleet2)
-
-# # Controleer welke Triathlons beide atleten hebben gedaan
-# gemeenschappelijk = pd.merge(df_atleet1['Triathlon'], df_atleet2['Triathlon'], on='Triathlon')
-#
-# # print("Gemeenschappelijke Triathlons:")
-# # print(gemeenschappelijk)
-#
-# # Voeg de datarames van atleet1 & atleet2 samen in 1 DF
-# combined_df = pd.concat([
-# df_atleet1[df_atleet1['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True),
-# df_atleet2[df_atleet2['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True)
-# ], ignore_index=True)
-
-
-
-visualize_differences(combined_df, atleet1, atleet2)
-
-exit()
 
 ########################### lINE PLOTS ###########################
 #plot_line(m_hhw, dirkshorners)
@@ -136,8 +114,6 @@ exit()
 # plot_bar(m_nn, "Loop", "Loop Niedorp", 27, dirkshorners)
 #plot_bar(m_sch, "Loop", "Schagen", 27, dirkshorners)
 ########################### BAR PLOTS ###########################
-
-
 
 
 #triathlon_keuze(triathlons)
