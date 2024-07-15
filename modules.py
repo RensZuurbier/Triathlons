@@ -13,7 +13,7 @@ def convert_to_int(value):
         if pd.isna(value) or value == 'DNF':
             return np.nan  # Return NaN for NaN and "DNF" values
         else:
-            return int(round(value))  # Convert other values to int
+            return int(value)  # Convert other values to int
     except ValueError:
         return np.nan  # Return NaN if conversion to int fails
 
@@ -138,7 +138,7 @@ def convert_to_time(dfs):
     """
     tijd_kolommen = ["Zwem", "Wis1", "Fiets", "NaFiets", "Wis2", "Loop", "Totaal"]
 #    df_copy = df.copy()
-    new_df = []
+    new_dfs = []
 
     def convert_value(value, column):
         if pd.isna(value) or value == "DNF":
@@ -146,6 +146,7 @@ def convert_to_time(dfs):
         try:
             # Splits de waardes op de ":" om te kijken met wat voor format we
             # te maken hebben en zo op de juiste manier om te kunnen zetten
+            value = str(value)
             parts = value.split(':')
             if column != "Totaal" and column != "Wis1" and len(parts) == 3 and parts[2] == '00':
                 # Behandel als MM:SS
@@ -171,35 +172,41 @@ def convert_to_time(dfs):
     # Loop door de lijst dataframes | En door alle kolommen per DF
     for df in dfs:
         df_copy = df.copy()
-        for col in df_copy.columns:
-            # Toepassen van de conversie functie op de kolom
-            df_copy[col] = df_copy.apply(lambda x: convert_value(x[col], col), axis=1)
+        for col in tijd_kolommen:
+            if col in df_copy.columns:
+                # Toepassen van de conversie functie op de kolom
+                df_copy[col] = df_copy[col].apply(lambda x: convert_value(x, col))
         new_dfs.append(df_copy)
 
-    return new_df
+    return new_dfs
 
 ### Zorgt ervoor dat er voor elk onderdeel een ranking kolom wordt gemaakt ###
-def add_ranking(df):
+def add_ranking(dfs):
     """
     Create a ranking column for each sport element
     """
     # Maak koppels, voor elk onderdeel-kolom moet een ranking kolom komen
     onderdelen = [['Zwem', '#Z'], ['Wis1', '#W1'], ['Fiets', '#F'],  ['NaFiets', '#NaF'],
                   ['Wis2', '#W2'],  ['Loop', '#L']]
+    new_dfs = []
 
-    for onderdeel, ranking in onderdelen:
-        if ranking not in df.columns:  # Controleer of de ranking kolom nog niet bestaat
-            # Bepaalt de plek van de ranking kolom (+1 op basis van het onderdeel)
-            index = df.columns.get_loc(onderdeel) + 1
+    for df in dfs:
+        df_copy = df.copy()
 
-            # Maak de rankingkolom aan en initialiseer deze als NaN (Not a Number)
-            df.insert(index, ranking, pd.NA)
+        for onderdeel, ranking in onderdelen:
+            if ranking not in df_copy.columns:  # Controleer of de ranking kolom nog niet bestaat
+                # Bepaalt de plek van de ranking kolom (+1 op basis van het onderdeel)
+                index = df_copy.columns.get_loc(onderdeel) + 1
 
-            # Voeg de ranking alleen toe aan rijen die geen NaN-waarden hebben in het onderdeel kolom
-            ranked_values = df.loc[~df[onderdeel].isna(), onderdeel].rank(method='min', na_option='keep').astype(pd.Int64Dtype())
-            df.loc[~df[onderdeel].isna(), ranking] = ranked_values
+                # Maak de rankingkolom aan en initialiseer deze als NaN (Not a Number)
+                df_copy.insert(index, ranking, pd.NA)
 
-    return df
+                # Voeg de ranking alleen toe aan rijen die geen NaN-waarden hebben in het onderdeel kolom
+                ranked_values = df_copy.loc[~df_copy[onderdeel].isna(), onderdeel].rank(method='min', na_option='keep').astype(pd.Int64Dtype())
+                df_copy.loc[~df_copy[onderdeel].isna(), ranking] = ranked_values
+        new_dfs.append(df_copy)
+
+    return new_dfs
 
 ### Dropt bestaande "NaFiets" kolommen en maakt deze opnieuw aan ###
 def add_nafiets(dfs):

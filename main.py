@@ -12,6 +12,7 @@ df_dirkshorn = pd.read_csv('triathlons_data/dirkshorn.csv')
 df_niedorp = pd.read_csv('triathlons_data/niedorp.csv')
 df_schagen = pd.read_csv('triathlons_data/schagen.csv')
 
+
 #### DH TRIATHLONNERS ####
 dirkshorners = ['Rens Zuurbier', 'Mitchell Tijsen', 'Thierry Spaans', 'Martin Bloothoofd',
                 'Co van Bueren']
@@ -41,77 +42,27 @@ dataframes = add_name(dataframes)
 #dataframes =[df_hhw, df_langedijk, df_dirkshorn, df_niedorp, df_schagen]
 dataframes = filter_df(dataframes, "MV", "M")
 
-# 3) Drop onnodige kolommen en ranking kolommen
+# 3) Drop onnodige kolommen en ranking kolommen om de ranking later weer aan te maken
 dataframes = drop_column(dataframes)
 
-# 4) Hernoemd "#MV" kolommen naar "#Tot" of Maakt nieuwe "#Tot" kolom aan
+# 4) Hernoemt "#MV" kolommen naar "#Tot" of maakt nieuwe "#Tot" kolom aan
 dataframes = create_tot(dataframes)
 
 df_hhw, df_langedijk, df_dirkshorn, df_niedorp, df_schagen = dataframes
 
-print("TYPE FIETS VOOR CONVERSIE")
-print(df_dirkshorn['Fiets'].dtype)
-print(df_dirkshorn.head())
-print("\n")
-
-
-# print(m_dh.dtypes)
-######df_dirkshorn = convert_to_time(df_dirkshorn, "Zwem", "Wis1", "Fiets", "NaFiets", "Wis2", "Loop", "Totaal")
-
-#m_dh = convert_to_time(m_dh, tijd_kolommen)
-# print(m_dh.dtypes)
-
-# m_ld = convert_to_time(m_ld, "Zwem", "Wis1", "Fiets", "NaFiets", "Wis2", "Loop", "Totaal")
-# m_nn = convert_to_time(m_nn, "Zwem", "Wis1", "Fiets", "NaFiets", "Wis2", "Loop", "Totaal")
-# m_hhw = convert_to_time(m_hhw, "Zwem", "Wis1", "Fiets", "NaFiets", "Wis2", "Loop", "Totaal")
-# m_sch = convert_to_time(m_sch, "Zwem", "Wis1", "Fiets", "NaFiets", "Wis2", "Loop", "Totaal")
-
+# 5) Convert alle kolommen met tijd om naar type TimeDelta
 dataframes = convert_to_time(dataframes)
-
-print("TYPE FIETS NA CONVERSIE")
-print(df_dirkshorn['Fiets'].dtype)
-print(df_dirkshorn.head())
-print("\n")
-
-
-print("DIT IS HET EINDE")
-print("###################################")
-
-exit()
 
 # Maak opnieuw de "NaFiets" kolom aan door de tijden op te tellen
 dataframes = add_nafiets(dataframes)
 
-df_hhw, df_langedijk, df_dirkshorn, df_niedorp, df_schagen = dataframes
+# Maakt de ranking  kolommen voor ieder DF opnieuw aan
+dataframes = add_ranking(dataframes)
 
-print(df_dirkshorn['NaFiets'].dtype)
-
-# for df in dataframes:
-#     print(df.head())
-
-
-tijd_kolommen = ["Zwem", "Wis1", "Fiets", "NaFiets", "Wis2", "Loop", "Totaal"]
-# Convert alle time tabellen naar TimeDelta
-# m_dh = convert_to_time(m_dh, tijd_kolommen)
-# m_ld = convert_to_time(m_ld, tijd_kolommen)
-# m_nn = convert_to_time(m_nn, tijd_kolommen)
-# m_hhw = convert_to_time(m_hhw, tijd_kolommen)
-# m_sch = convert_to_time(m_sch, tijd_kolommen)
+m_hhw, m_langedijk, m_dirkshorn, m_niedorp, m_schagen = dataframes
 
 
 
-
-
-
-
-# Voeg de ranking kolommen per onderdeel toe
-m_dh = add_ranking(m_dh)
-m_ld = add_ranking(m_ld)
-m_nn = add_ranking(m_nn)
-m_hhw = add_ranking(m_hhw)
-m_sch = add_ranking(m_sch)
-
-triathlons =[m_hhw, m_ld, m_dh, m_nn, m_sch]
 #triathlons =[["1: Stad van de Zon", m_hhw], ["2: Langedijk", m_ld], ["3: Dirkshorn", m_dh], ["4: Nieuwe Niedorp", m_nn]]
 
 # print("\n" +"Resultaten Langedijk")
@@ -129,13 +80,14 @@ triathlons =[m_hhw, m_ld, m_dh, m_nn, m_sch]
 #print(m_ld.loc[m_ld['Naam'].isin(dirkshorners)])
 
 
+triathlons =[m_hhw, m_langedijk, m_dirkshorn, m_niedorp, m_schagen]
 
 
 # plot_stacked_bar(m_hhw, "Stad v d Zon", dirkshorners)
 # plot_stacked_bar(m_ld, "Langedijk", dirkshorners)
 # plot_stacked_bar(m_dh, "Dirkshorn", dirkshorners)
 # plot_stacked_bar(m_nn, "Nieuwe Niedorp")
-plot_stacked_bar(m_sch, "Schagen", dirkshorners)
+plot_stacked_bar(m_schagen, "Schagen", dirkshorners)
 
 
 # Maakt DFs van enkel Rens & Mitchell
