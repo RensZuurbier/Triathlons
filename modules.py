@@ -547,12 +547,10 @@ def combined_df(dfs):
 
 def visualize_differences(df):
     """
-    Toont de verschillen tussen twee atleten in verschillende triathlons.
+    Toont de verschillen tussen atleten in verschillende triathlons.
 
     Parameters:
-    - df: Gecombineerde DataFrame met prestaties van beide atleten
-    - atleet1: Naam van de eerste atleet
-    - atleet2: Naam van de tweede atleet
+    - df: Gecombineerde DataFrame met prestaties van de atleten
     """
     atleten = df['Naam'].unique()
 
