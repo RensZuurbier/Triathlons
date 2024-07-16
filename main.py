@@ -76,11 +76,21 @@ df_atleet1, atleet1 = search_and_select(dataframes, atleet1)
 atleet2 = input("\n" "selecteer atleet 2: ")
 df_atleet2, atleet2 = search_and_select(dataframes, atleet2)
 
+atleet3 = input("\n" "selecteer atleet 3: ")
+df_atleet3, atleet3 = search_and_select(dataframes, atleet3)
+
+atleet4 = input("\n" "selecteer atleet 4: ")
+df_atleet4, atleet4 = search_and_select(dataframes, atleet4)
+
+
+atl_dfs = [df_atleet1, df_atleet2, df_atleet3, df_atleet4]
+
 # Maakt een nieuwe DF van de resultaten van beide atleten op de gemeenschappelijke DFs
-combined_df = combined_df(df_atleet1, df_atleet2)
+combined_df = combined_df(atl_dfs)
+
 
 ######### PLOT RADAR DIAGRAM TUSSEN 2 ATLETEN ############
-visualize_differences(combined_df, atleet1, atleet2)
+visualize_differences(combined_df)
 
 exit()
 

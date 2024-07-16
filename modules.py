@@ -288,20 +288,7 @@ def search_and_select(dfs, search_value):
 ############## ZOEKT DE ATLEET OP IN DE DF EN MAAKT EEN LOSSE DF  ##############
 #################################################################################
 
-def combined_df(df_atleet1, df_atleet2):
-    """
-    Checks which triathlons both atletes have in comen, and combine the results
-    of both given atletes into 1 DF for measuring
-    """
-    # Controleer de gemeenschappelijke triathlons
-    gemeenschappelijk = pd.merge(df_atleet1['Triathlon'], df_atleet2['Triathlon'], on='Triathlon')
 
-    combined_df = pd.concat([
-    df_atleet1[df_atleet1['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True),
-    df_atleet2[df_atleet2['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True)
-    ], ignore_index=True)
-
-    return combined_df
 
 ### maakt een Bar plot voor de opgegeven kolom van het DF. Geef weer hoe ###
 ### atleten met verschillende onderdelen hebben gepresteerd tov elkaar   ###
@@ -537,7 +524,28 @@ def convert_to_seconds(time_str):
     t = pd.to_timedelta(time_str)
     return t.total_seconds()
 
-def visualize_differences(df, atleet1, atleet2):
+
+def combined_df(dfs):
+    """
+    Checks which triathlons both atletes have in comen, and combine the results
+    of both given atletes into 1 DF for measuring
+    """
+    # Controleer de gemeenschappelijke triathlons
+    if len(dfs) < 2 or len(dfs) > 4:
+        raise ValueError("Geef minimaal 2 en maximaal 4 atleten op voor een radar diagram.")
+
+    # Zoek de gemeenschappelijke triathlons
+    gemeenschappelijk = dfs[0][['Triathlon']]
+    for df in dfs:
+        gemeenschappelijk = pd.merge(gemeenschappelijk, df[['Triathlon']], on='Triathlon')
+
+    gefilterde_dfs = [df[df['Triathlon'].isin(gemeenschappelijk['Triathlon'])].reset_index(drop=True) for df in dfs]
+    combined_df = pd.concat(gefilterde_dfs, ignore_index=True)
+
+    return combined_df
+
+
+def visualize_differences(df):
     """
     Toont de verschillen tussen twee atleten in verschillende triathlons.
 
@@ -546,27 +554,84 @@ def visualize_differences(df, atleet1, atleet2):
     - atleet1: Naam van de eerste atleet
     - atleet2: Naam van de tweede atleet
     """
-    # Filter de data voor beide atleten
-    df_atleet1 = df[df['Naam'] == atleet1]
-    df_atleet2 = df[df['Naam'] == atleet2]
+    atleten = df['Naam'].unique()
 
-    df_atleet1 = df_atleet1.copy()
-    df_atleet2 = df_atleet2.copy()
+    if len(atleten) < 2 or len(atleten) > 4:
+        raise ValueError(f"Geef minimaal 2 en maximaal 4 atleten op voor de radar diagram vergelijking, {len(atleten)} gegeven")
+
+    dfs = [df[df['Naam'] == atleet].copy() for atleet in atleten]
+#    atleet1, atleet2, atleet3, atleet4 = atleten[:4]
+
+
+    # creeer unieke DFs per atleet
+    # df_atleet1 = df[df['Naam'] == atleet1].copy()
+    # df_atleet2 = df[df['Naam'] == atleet2].copy()
+    # df_atleet3 = df[df['Naam'] == atleet3].copy()
+    # df_atleet4 = df[df['Naam'] == atleet4].copy()
 
 
     # Converteer tijden naar seconden voor gemakkelijke berekening
     onderdelen = ['Zwem', 'Fiets', 'Loop', 'Totaal']
-    for onderdeel in onderdelen:
-        df_atleet1[f'{onderdeel}_sec'] = df_atleet1[onderdeel].apply(convert_to_seconds)
-        df_atleet2[f'{onderdeel}_sec'] = df_atleet2[onderdeel].apply(convert_to_seconds)
+    for df_atleet in dfs:
+        for onderdeel in onderdelen:
+            df_atleet[f'{onderdeel}_sec'] = df_atleet[onderdeel].apply(convert_to_seconds)
+            # df_atleet1[f'{onderdeel}_sec'] = df_atleet1[onderdeel].apply(convert_to_seconds)
+            # df_atleet2[f'{onderdeel}_sec'] = df_atleet2[onderdeel].apply(convert_to_seconds)
+            # df_atleet3[f'{onderdeel}_sec'] = df_atleet3[onderdeel].apply(convert_to_seconds)
+            # df_atleet4[f'{onderdeel}_sec'] = df_atleet4[onderdeel].apply(convert_to_seconds)
 
-    # Gemeenschappelijke triathlons
-    gemeenschappelijk = pd.merge(df_atleet1[['Triathlon']], df_atleet2[['Triathlon']], on='Triathlon')
 
-    # Filter op gemeenschappelijke triathlons
-    df_atleet1 = df_atleet1[df_atleet1['Triathlon'].isin(gemeenschappelijk['Triathlon'])]
-    df_atleet2 = df_atleet2[df_atleet2['Triathlon'].isin(gemeenschappelijk['Triathlon'])]
 
+
+
+    ### Radar- of spindiagram per triathlon vergelijking tussen 2 atleten ###
+    for triathlon in df['Triathlon'].unique():
+        stats = []
+        for df_atleet in dfs:
+            df_temp = df_atleet[df_atleet['Triathlon'] == triathlon]
+            stats.append([df_temp[f'{onderdeel}_sec'].values[0] for onderdeel in onderdelen])
+
+        # Voor de radarplot
+        angles = np.linspace(0, 2 * np.pi, len(onderdelen), endpoint=False).tolist()
+        stats += [stats[0]]  # Herhaal het eerste element om de plot te sluiten
+#        angles = np.linspace(0, 2 * np.pi, len(onderdelen), endpoint=False).tolist()
+#        angles += angles[:1]
+#        stats += [stats[0]]  # Herhaal het eerste element om de plot te sluiten
+
+        # Plot instellingen
+        fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+        colors = ['blue', 'red', 'green', 'purple'][:len(atleten)]  # Kleuren voor de atleten
+
+        # Plot elk atleet op de radarplot
+        for i, (stat, color) in enumerate(zip(stats, colors)):
+            ax.fill(angles, stat, color=color, alpha=0.25)
+            ax.plot(angles, stat, color=color, linewidth=2, label=atleten[i])
+
+        ax.set_yticklabels([])
+        ax.set_xticks(angles)
+        ax.set_xticklabels(onderdelen)
+        ax.set_title(f'Vergelijking van Atleten - {triathlon}')
+        ax.legend()
+
+
+        # Sla de plots op
+        # output_directory = 'plots'
+        # filename = (f'Rentah vs Mitta {triathlon}')
+        # full_path = f'{output_directory}/{filename}'
+        # plt.savefig(full_path)
+
+        plt.show()
+    ### Radar- of spindiagram per triathlon vergelijking tussen 2 atleten ###
+
+
+
+
+
+
+
+
+
+############# OLD PART OF visualize_differences #############
     # Bereken de tijdsverschillen
     # verschillen = []
     # for triathlon in gemeenschappelijk['Triathlon']:
@@ -597,38 +662,7 @@ def visualize_differences(df, atleet1, atleet2):
     # plt.tight_layout()
     # plt.show()
 
-    ### Radar- of spindiagram per triathlon vergelijking tussen 2 atleten ###
-    for triathlon in gemeenschappelijk['Triathlon']:
-        df1 = df_atleet1[df_atleet1['Triathlon'] == triathlon]
-        df2 = df_atleet2[df_atleet2['Triathlon'] == triathlon]
 
-        labels = ['Zwem', 'Fiets', 'Loop']
-        stats1 = [df1[f'{onderdeel}_sec'].values[0] for onderdeel in labels]
-        stats2 = [df2[f'{onderdeel}_sec'].values[0] for onderdeel in labels]
-
-        angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
-        stats1 += stats1[:1]
-        stats2 += stats2[:1]
-        angles += angles[:1]
-
-        fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-        ax.fill(angles, stats1, color='blue', alpha=0.25)
-        ax.fill(angles, stats2, color='red', alpha=0.25)
-        ax.plot(angles, stats1, color='blue', linewidth=2, label=atleet1)
-        ax.plot(angles, stats2, color='red', linewidth=2, label=atleet2)
-        ax.set_yticklabels([])
-        ax.set_xticks(angles[:-1])
-        ax.set_xticklabels(labels)
-        ax.set_title(f'{atleet1} vs {atleet2} - {triathlon}')
-        ax.legend()
-
-        # Sla de plots op
-        # output_directory = 'plots'
-        # filename = (f'Rentah vs Mitta {triathlon}')
-        # full_path = f'{output_directory}/{filename}'
-        # plt.savefig(full_path)
-
-        plt.show()
 
 
 # def triathlon_keuze(triathlons):
