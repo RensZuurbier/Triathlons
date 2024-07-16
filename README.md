@@ -21,4 +21,4 @@ Enkele verkregen inzichten zijn:
     - progressie per atleet en per onderdeel middels een line diagram
     - Verhoudingen van prestaties tussen 2 atleten
 
-Zie plots: https://github.com/RensZuurbier/Netflix/tree/master/Netflix/plots
+Zie plots: https://github.com/RensZuurbier/Triathlons/tree/master/plots
