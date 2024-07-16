@@ -560,29 +560,12 @@ def visualize_differences(df):
         raise ValueError(f"Geef minimaal 2 en maximaal 4 atleten op voor de radar diagram vergelijking, {len(atleten)} gegeven")
 
     dfs = [df[df['Naam'] == atleet].copy() for atleet in atleten]
-#    atleet1, atleet2, atleet3, atleet4 = atleten[:4]
-
-
-    # creeer unieke DFs per atleet
-    # df_atleet1 = df[df['Naam'] == atleet1].copy()
-    # df_atleet2 = df[df['Naam'] == atleet2].copy()
-    # df_atleet3 = df[df['Naam'] == atleet3].copy()
-    # df_atleet4 = df[df['Naam'] == atleet4].copy()
-
 
     # Converteer tijden naar seconden voor gemakkelijke berekening
     onderdelen = ['Zwem', 'Fiets', 'Loop', 'Totaal']
     for df_atleet in dfs:
         for onderdeel in onderdelen:
             df_atleet[f'{onderdeel}_sec'] = df_atleet[onderdeel].apply(convert_to_seconds)
-            # df_atleet1[f'{onderdeel}_sec'] = df_atleet1[onderdeel].apply(convert_to_seconds)
-            # df_atleet2[f'{onderdeel}_sec'] = df_atleet2[onderdeel].apply(convert_to_seconds)
-            # df_atleet3[f'{onderdeel}_sec'] = df_atleet3[onderdeel].apply(convert_to_seconds)
-            # df_atleet4[f'{onderdeel}_sec'] = df_atleet4[onderdeel].apply(convert_to_seconds)
-
-
-
-
 
     ### Radar- of spindiagram per triathlon vergelijking tussen 2 atleten ###
     for triathlon in df['Triathlon'].unique():
@@ -594,9 +577,6 @@ def visualize_differences(df):
         # Voor de radarplot
         angles = np.linspace(0, 2 * np.pi, len(onderdelen), endpoint=False).tolist()
         stats += [stats[0]]  # Herhaal het eerste element om de plot te sluiten
-#        angles = np.linspace(0, 2 * np.pi, len(onderdelen), endpoint=False).tolist()
-#        angles += angles[:1]
-#        stats += [stats[0]]  # Herhaal het eerste element om de plot te sluiten
 
         # Plot instellingen
         fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
@@ -612,7 +592,6 @@ def visualize_differences(df):
         ax.set_xticklabels(onderdelen)
         ax.set_title(f'Vergelijking van Atleten - {triathlon}')
         ax.legend()
-
 
         # Sla de plots op
         # output_directory = 'plots'
