@@ -51,52 +51,67 @@ dataframes = add_nafiets(dataframes)
 dataframes = add_ranking(dataframes)
 
 
+# Voegt namen van de Triathlons toe in een extra kolom
+for i , df in enumerate(dataframes):
+    triathlon = ['Stad van de Zon', 'Langedijk', 'Dirkshorn', 'Niedorp', 'Schagen'][i]
+    df['Triathlon'] = triathlon
+
+# Combineert de dataframes tot 1 grote dataframe
+combined_df = pd.concat(dataframes, ignore_index=True)
+
+# Exporteer naar .csv bestand
+combined_df.to_csv('triathlons_combined.csv', index=False)
+
 ###### Check hoe de dataframes er stuk voor stuk uit zien. Moet dezelfde opzet zijn ######
+for df in dataframes:
+    print(df.head())
+
+
 # print("\n" + "Resultaten HHW")
-# print(m_hhw.head())
+# print(df_hhw.head())
 #
 # print("\n" +"Resultaten Langedijk")
-# print(m_langedijk.head())
+# print(df_langedijk.head())
 #
 # print("\n" + "Resultaten Dirkshorn")
-# print(m_dirkshorn.head())
+# print(df_dirkshorn.head())
 #
 # print("\n" + "Resultaten Niedorp")
-# print(m_niedorp.head())
+# print(df_niedorp.head())
 #
 # print("\n" + "Resultaten Schagen")
-# print(m_schagen.head())
+# print(df_schagen.head())
 ###### Check hoe de dataframes er stuk voor stuk uit zien. Moet dezelfde opzet zijn ######
 
 
 ## Laat de gebruiker atleet 1 en atleet 2 uit de beschikbare data selecteren voor vergelijking ##
-atleet1 = input("Selecteer atleet 1: ")
-df_atleet1, atleet1 = search_and_select(dataframes, atleet1)
+# atleet1 = input("Selecteer atleet 1: ")
+# df_atleet1, atleet1 = search_and_select(dataframes, atleet1)
+#
+# atleet2 = input("\n" "selecteer atleet 2: ")
+# df_atleet2, atleet2 = search_and_select(dataframes, atleet2)
+#
+# atleet3 = input("\n" "selecteer atleet 3: ")
+# df_atleet3, atleet3 = search_and_select(dataframes, atleet3)
+#
+# atleet4 = input("\n" "selecteer atleet 4: ")
+# df_atleet4, atleet4 = search_and_select(dataframes, atleet4)
 
-atleet2 = input("\n" "selecteer atleet 2: ")
-df_atleet2, atleet2 = search_and_select(dataframes, atleet2)
 
-atleet3 = input("\n" "selecteer atleet 3: ")
-df_atleet3, atleet3 = search_and_select(dataframes, atleet3)
-
-atleet4 = input("\n" "selecteer atleet 4: ")
-df_atleet4, atleet4 = search_and_select(dataframes, atleet4)
-
-
-atl_dfs = [df_atleet1, df_atleet2, df_atleet3, df_atleet4]
+# atl_dfs = [df_atleet1, df_atleet2, df_atleet3, df_atleet4]
 
 # Maakt een nieuwe DF van de resultaten van beide atleten op de gemeenschappelijke DFs
-combined_df = combined_df(atl_dfs)
+# combined_df = combined_df(atl_dfs)
 
 
 ######### PLOT RADAR DIAGRAM TUSSEN 2 ATLETEN ############
-visualize_differences(combined_df)
+#visualize_differences(combined_df)
 
 exit()
 
 #### DH TRIATHLONNERS ####
-dirkshorners = ['Rens Zuurbier', 'Mitchell Tijsen', 'Thierry Spaans', 'Martin Bloothoofd',
-                'Co van Bueren']
+# dirkshorners = ['Rens Zuurbier', 'Mitchell Tijsen', 'Thierry Spaans', 'Martin Bloothoofd',
+#                'Co van Bueren']
 
 ########################### STACKED PLOTS ###########################
 # plot_stacked_bar(m_hhw, "Stad v d Zon", dirkshorners)
